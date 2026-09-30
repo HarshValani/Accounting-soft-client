@@ -1,0 +1,32 @@
+<app-modal [isOpen]="isOpen" [title]="title" size="sm" (close)="onCancel()">
+  <div class="confirm-body" modal-body>
+    <div class="confirm-icon" [ngClass]="{ 'danger': isDanger }">
+      <span>{{ isDanger ? '!' : '?' }}</span>
+    </div>
+    <div class="confirm-content">
+      <p class="confirm-message">{{ message }}</p>
+    </div>
+  </div>
+
+  <div class="confirm-footer" modal-footer>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="onCancel()"
+      [disabled]="isLoading"
+    >
+      {{ cancelText }}
+    </button>
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="isDanger ? 'btn-danger' : 'btn-primary'"
+      (click)="onConfirm()"
+      [disabled]="isLoading"
+    >
+      <span *ngIf="isLoading" class="spinner"></span>
+      <span>{{ confirmText }}</span>
+    </button>
+  </div>
+</app-modal>
+

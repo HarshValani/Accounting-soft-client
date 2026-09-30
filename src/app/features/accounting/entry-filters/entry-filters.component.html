@@ -1,0 +1,90 @@
+<form [formGroup]="filterForm" class="filter-bar">
+  <!-- Search -->
+  <div class="filter-field search-field">
+    <label for="filter-search" class="filter-label">Search</label>
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        id="filter-search"
+        type="text"
+        formControlName="search"
+        class="filter-control"
+        placeholder="Search account or note..."
+        (input)="onSearchInput($event)"
+      />
+    </div>
+  </div>
+
+  <!-- From Account -->
+  <div class="filter-field">
+    <label for="filter-from" class="filter-label">From Account</label>
+    <div class="select-wrapper">
+      <select
+        id="filter-from"
+        formControlName="fromAccountId"
+        class="filter-control"
+        (change)="onFieldChange()"
+      >
+        <option value="">All Accounts</option>
+        <option *ngFor="let acc of accounts" [value]="acc.id">
+          {{ acc.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- To Account -->
+  <div class="filter-field">
+    <label for="filter-to" class="filter-label">To Account</label>
+    <div class="select-wrapper">
+      <select
+        id="filter-to"
+        formControlName="toAccountId"
+        class="filter-control"
+        (change)="onFieldChange()"
+      >
+        <option value="">All Accounts</option>
+        <option *ngFor="let acc of accounts" [value]="acc.id">
+          {{ acc.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Date From -->
+  <div class="filter-field date-field">
+    <label for="filter-date-from" class="filter-label">Date From</label>
+    <input
+      id="filter-date-from"
+      type="date"
+      formControlName="dateFrom"
+      class="filter-control"
+      (change)="onFieldChange()"
+    />
+  </div>
+
+  <!-- Date To -->
+  <div class="filter-field date-field">
+    <label for="filter-date-to" class="filter-label">Date To</label>
+    <input
+      id="filter-date-to"
+      type="date"
+      formControlName="dateTo"
+      class="filter-control"
+      (change)="onFieldChange()"
+    />
+  </div>
+
+  <!-- Clear Filters Action -->
+  <div class="filter-actions" *ngIf="hasActiveFilters">
+    <button
+      type="button"
+      class="btn-clear"
+      (click)="onClear()"
+      title="Clear all filters"
+    >
+      &times; Clear Filters
+    </button>
+  </div>
+</form>
+

@@ -1,0 +1,178 @@
+<div class="entries-table-wrapper">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="table-loading-overlay">
+    <div class="spinner"></div>
+    <span>Updating entries...</span>
+  </div>
+
+  <!-- Table Container (Horizontal scroll on mobile) -->
+  <div class="table-responsive">
+    <table class="entries-table">
+      <thead>
+        <tr>
+          <th
+            class="th-sortable"
+            (click)="onSort('entryDate')"
+            [attr.aria-sort]="sortBy === 'entryDate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+          >
+            <div class="th-content">
+              <span>Date</span>
+              <span class="sort-icon" *ngIf="sortBy === 'entryDate'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </div>
+          </th>
+
+          <th>From Account</th>
+
+          <th>To Account</th>
+
+          <th
+            class="th-sortable th-amount"
+            (click)="onSort('amount')"
+            [attr.aria-sort]="sortBy === 'amount' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'"
+          >
+            <div class="th-content right">
+              <span>Amount</span>
+              <span class="sort-icon" *ngIf="sortBy === 'amount'">
+                {{ sortDirection === 'asc' ? '▲' : '▼' }}
+              </span>
+            </div>
+          </th>
+
+          <th>Note</th>
+
+          <th class="th-actions">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- Empty / No Results Row -->
+        <tr *ngIf="!isLoading && (!entries || entries.length === 0)">
+          <td colspan="6" class="td-empty">
+            <div class="empty-results-box">
+              <span class="empty-icon">🔍</span>
+              <h4 *ngIf="hasActiveFilters">No entries match your current filters.</h4>
+              <h4 *ngIf="!hasActiveFilters">No entries recorded yet.</h4>
+              <p *ngIf="hasActiveFilters">Try adjusting or clearing your search and filters.</p>
+              <p *ngIf="!hasActiveFilters">Use the form above to add your first transaction.</p>
+              <button
+                *ngIf="hasActiveFilters"
+                type="button"
+                class="btn-clear-empty"
+                (click)="onClearFilters()"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <!-- Entry Rows -->
+        <tr *ngFor="let entry of (entries || [])" class="entry-row" [class.starting-balance-row]="isStartingBalanceEntry(entry)">
+          <td class="td-date">
+            <span class="date-badge">{{ entry.entryDate | customDate }}</span>
+          </td>
+
+          <td class="td-account td-from">
+            <span class="account-pill from-pill">{{ entry.fromAccountName }}</span>
+          </td>
+
+          <td class="td-account td-to">
+            <span class="account-pill to-pill">{{ entry.toAccountName }}</span>
+          </td>
+
+          <td class="td-amount">
+            <span class="amount-value">{{ entry.amount | inrCurrency }}</span>
+          </td>
+
+          <td class="td-note">
+            <span class="note-text" [title]="entry.note || ''">
+              {{ entry.note || '—' }}
+            </span>
+          </td>
+
+          <td class="td-actions">
+            <div class="action-buttons">
+              <button
+                *ngIf="!isStartingBalanceEntry(entry)"
+                type="button"
+                class="btn-action btn-edit"
+                (click)="onEdit(entry)"
+                aria-label="Edit entry"
+                title="Edit entry"
+              >
+                Edit
+              </button>
+              <button
+                *ngIf="!isStartingBalanceEntry(entry)"
+                type="button"
+                class="btn-action btn-delete"
+                (click)="onDelete(entry)"
+                aria-label="Delete entry"
+                title="Delete entry"
+              >
+                Delete
+              </button>
+              <span *ngIf="isStartingBalanceEntry(entry)" class="starting-balance-badge">Starting Balance</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Footer -->
+  <div class="pagination-footer" *ngIf="total > 0">
+    <div class="pagination-info">
+      Showing <strong>{{ startIndex }}</strong> to <strong>{{ endIndex }}</strong> of <strong>{{ total }}</strong> entries
+    </div>
+
+    <div class="pagination-controls">
+      <!-- Page Size Selector -->
+      <div class="page-size-picker">
+        <label for="page-size">Per page:</label>
+        <select id="page-size" [value]="pageSize" (change)="onPageSizeSelect($event)">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+
+      <!-- Page Buttons -->
+      <div class="page-nav">
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="page === 1"
+          (click)="onPage(page - 1)"
+          aria-label="Previous page"
+        >
+          ‹ Prev
+        </button>
+
+        <button
+          *ngFor="let p of getPageNumbers()"
+          type="button"
+          class="btn-page"
+          [ngClass]="{ 'active': p === page }"
+          (click)="onPage(p)"
+        >
+          {{ p }}
+        </button>
+
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="page >= totalPages"
+          (click)="onPage(page + 1)"
+          aria-label="Next page"
+        >
+          Next ›
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

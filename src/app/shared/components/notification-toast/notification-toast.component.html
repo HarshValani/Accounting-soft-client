@@ -1,0 +1,24 @@
+<div class="toast-container" *ngIf="notifications().length > 0" aria-live="polite">
+  <div
+    *ngFor="let n of notifications()"
+    class="toast-item"
+    [ngClass]="'toast-' + n.type"
+    role="alert"
+  >
+    <div class="toast-icon">
+      <span>{{ getIcon(n.type) }}</span>
+    </div>
+    <div class="toast-message">
+      {{ n.message }}
+    </div>
+    <button
+      type="button"
+      class="toast-close"
+      (click)="dismiss(n.id)"
+      aria-label="Close notification"
+    >
+      &times;
+    </button>
+  </div>
+</div>
+

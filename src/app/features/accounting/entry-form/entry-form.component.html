@@ -1,0 +1,164 @@
+<form [formGroup]="entryForm" (ngSubmit)="onSubmit()" class="entry-form" novalidate>
+  <!-- Same Account Error Banner -->
+  <div *ngIf="hasSameAccountError" class="alert alert-danger" role="alert">
+    From Account and To Account must be different.
+  </div>
+
+  <div class="form-grid">
+    <!-- From Account -->
+    <div class="form-group">
+      <label for="fromAccountId" class="form-label">
+        From Account <span class="required">*</span>
+      </label>
+      <div class="select-wrapper">
+        <select
+          id="fromAccountId"
+          formControlName="fromAccountId"
+          class="form-control"
+          [ngClass]="{
+            'is-invalid':
+              (fromAccountControl?.touched && fromAccountControl?.invalid) ||
+              hasSameAccountError
+          }"
+        >
+          <option value="" disabled>Select Account</option>
+          <option *ngFor="let acc of accounts" [value]="acc.id">
+            {{ acc.name }}
+          </option>
+        </select>
+      </div>
+      <div
+        *ngIf="fromAccountControl?.touched && fromAccountControl?.errors?.['required']"
+        class="invalid-feedback"
+      >
+        From Account is required.
+      </div>
+    </div>
+
+    <!-- Arrow / Flow indicator (desktop) -->
+    <div class="flow-indicator" aria-hidden="true">
+      <span>→</span>
+    </div>
+
+    <!-- To Account -->
+    <div class="form-group">
+      <label for="toAccountId" class="form-label">
+        To Account <span class="required">*</span>
+      </label>
+      <div class="select-wrapper">
+        <select
+          id="toAccountId"
+          formControlName="toAccountId"
+          class="form-control"
+          [ngClass]="{
+            'is-invalid':
+              (toAccountControl?.touched && toAccountControl?.invalid) ||
+              hasSameAccountError
+          }"
+        >
+          <option value="" disabled>Select Account</option>
+          <option *ngFor="let acc of accounts" [value]="acc.id">
+            {{ acc.name }}
+          </option>
+        </select>
+      </div>
+      <div
+        *ngIf="toAccountControl?.touched && toAccountControl?.errors?.['required']"
+        class="invalid-feedback"
+      >
+        To Account is required.
+      </div>
+    </div>
+
+    <!-- Amount -->
+    <div class="form-group">
+      <label for="amount" class="form-label">
+        Amount (₹) <span class="required">*</span>
+      </label>
+      <div class="input-with-prefix">
+        <span class="currency-prefix">₹</span>
+        <input
+          id="amount"
+          type="number"
+          min="0.01"
+          step="0.01"
+          formControlName="amount"
+          class="form-control"
+          [ngClass]="{ 'is-invalid': amountControl?.touched && amountControl?.invalid }"
+          placeholder="0.00"
+        />
+      </div>
+      <div
+        *ngIf="amountControl?.touched && amountControl?.invalid"
+        class="invalid-feedback"
+      >
+        <span *ngIf="amountControl?.errors?.['required']">Amount is required.</span>
+        <span *ngIf="amountControl?.errors?.['min']">Amount must be greater than 0.</span>
+      </div>
+    </div>
+
+    <!-- Date -->
+    <div class="form-group">
+      <label for="entryDate" class="form-label">
+        Date <span class="required">*</span>
+      </label>
+      <input
+        id="entryDate"
+        type="date"
+        formControlName="entryDate"
+        class="form-control"
+        [ngClass]="{ 'is-invalid': dateControl?.touched && dateControl?.invalid }"
+      />
+      <div
+        *ngIf="dateControl?.touched && dateControl?.errors?.['required']"
+        class="invalid-feedback"
+      >
+        Date is required.
+      </div>
+    </div>
+  </div>
+
+  <!-- Note (Full width) -->
+  <div class="form-group note-group">
+    <label for="note" class="form-label">
+      Note <span class="optional">(Optional)</span>
+    </label>
+    <input
+      id="note"
+      type="text"
+      formControlName="note"
+      class="form-control"
+      maxlength="500"
+      placeholder="e.g. Cash deposited into bank / Supplier payment"
+      [ngClass]="{ 'is-invalid': noteControl?.touched && noteControl?.invalid }"
+    />
+    <div
+      *ngIf="noteControl?.touched && noteControl?.errors?.['maxlength']"
+      class="invalid-feedback"
+    >
+      Note cannot exceed 500 characters.
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions" [ngClass]="{ 'edit-actions': isEditMode }">
+    <button
+      *ngIf="isEditMode"
+      type="button"
+      class="btn btn-secondary"
+      (click)="onCancel()"
+      [disabled]="isSubmitting"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="isSubmitting || entryForm.invalid"
+    >
+      <span *ngIf="isSubmitting" class="spinner"></span>
+      <span>{{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update Entry' : '+ Add Entry') }}</span>
+    </button>
+  </div>
+</form>
+

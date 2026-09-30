@@ -1,0 +1,65 @@
+<div
+  class="balance-card"
+  [ngClass]="{ 'is-selected': isSelected }"
+  (click)="onClick()"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="onClick()"
+  (keydown.space)="onClick()"
+  [attr.aria-pressed]="isSelected"
+  [attr.aria-label]="accountBalance.accountName + ' balance: ' + (accountBalance.balance | inrCurrency)"
+>
+  <div class="card-header">
+    <h4 class="account-name">{{ accountBalance.accountName }}</h4>
+    <div class="card-header-right">
+      <span *ngIf="isSelected" class="selected-tag">Active Filter</span>
+      <div class="menu-container" (click)="$event.stopPropagation()">
+        <button
+          type="button"
+          class="btn-menu"
+          (click)="toggleMenu($event)"
+          [attr.aria-expanded]="isMenuOpen"
+          [attr.aria-label]="'Actions for ' + accountBalance.accountName"
+        >
+          <span>•••</span>
+        </button>
+        <div *ngIf="isMenuOpen" class="dropdown-menu" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="menu-item"
+            (click)="onEdit($event)"
+          >
+            <span>Edit Account</span>
+          </button>
+          <button
+            type="button"
+            class="menu-item delete"
+            (click)="onDelete($event)"
+          >
+            <span>Delete Account</span>
+          </button>
+        </div>
+      </div>
+      <div *ngIf="isMenuOpen" class="menu-backdrop" (click)="closeMenu()"></div>
+    </div>
+  </div>
+
+  <div class="card-balance-section">
+    <span class="balance-label">Balance</span>
+    <div
+      class="balance-value"
+      [ngClass]="{
+        'positive': accountBalance.balance > 0,
+        'negative': accountBalance.balance < 0,
+        'zero': accountBalance.balance === 0
+      }"
+    >
+      {{ accountBalance.balance | inrCurrency }}
+    </div>
+  </div>
+
+  <div class="card-click-hint">
+    <span>{{ isSelected ? 'Click to deselect' : 'Click to filter entries' }}</span>
+  </div>
+</div>
+

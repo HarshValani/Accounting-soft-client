@@ -1,0 +1,54 @@
+<div class="account-balances-section">
+  <!-- Section Header -->
+  <div class="section-header">
+    <div>
+      <h2 class="section-title">Account Balances</h2>
+      <p class="section-subtitle">Real-time status of all your accounts and cash flow</p>
+    </div>
+    <button type="button" class="btn-new-account" (click)="onAddAccount()">
+      <span>+ New Account</span>
+    </button>
+  </div>
+
+  <!-- Active Account Filter Banner -->
+  <div *ngIf="selectedAccountId && selectedAccountName" class="filter-indicator-banner">
+    <div class="filter-indicator-text">
+      <span class="filter-badge">Active Account Filter</span>
+      <span>Showing entries for: <strong>{{ selectedAccountName }}</strong></span>
+    </div>
+    <button
+      type="button"
+      class="btn-clear-filter"
+      (click)="clearAccountFilter()"
+    >
+      &times; Clear Account Filter
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner-lg"></div>
+    <p>Loading accounts and balances...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && (!balances || balances.length === 0)" class="empty-state">
+    <div class="empty-icon">📂</div>
+    <h3>No accounts available</h3>
+    <p>Create your first account to start tracking transactions.</p>
+    <button type="button" class="btn btn-primary" (click)="onAddAccount()">
+      + Create Account
+    </button>
+  </div>
+
+  <!-- Cards Grid -->
+  <div *ngIf="!isLoading && balances && balances.length > 0" class="cards-grid">
+    <app-account-balance-card
+      *ngFor="let item of balances"
+      [accountBalance]="item"
+      [isSelected]="item.accountId === selectedAccountId"
+      (cardClick)="onCardClick($event)"
+    ></app-account-balance-card>
+  </div>
+</div>
+

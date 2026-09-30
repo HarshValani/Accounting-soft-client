@@ -1,0 +1,83 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="app-brand-icon">
+        <span>₹</span>
+      </div>
+      <h1 class="app-title">ACCOUNTING APP</h1>
+      <p class="app-subtitle">Multi-User Cashbook & Accounting Management</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div *ngIf="errorMessage" class="error-alert" role="alert">
+      <span class="error-icon">✕</span>
+      <span class="error-text">{{ errorMessage }}</span>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="username" class="form-label">Username</label>
+        <div class="input-wrapper">
+          <input
+            id="username"
+            type="text"
+            formControlName="username"
+            class="form-control"
+            [ngClass]="{ 'is-invalid': usernameControl?.touched && usernameControl?.invalid }"
+            placeholder="Enter your username"
+            autocomplete="username"
+          />
+        </div>
+        <div
+          *ngIf="usernameControl?.touched && usernameControl?.invalid"
+          class="invalid-feedback"
+        >
+          <span *ngIf="usernameControl?.errors?.['required']">Username is required.</span>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-wrapper password-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            class="form-control"
+            [ngClass]="{ 'is-invalid': passwordControl?.touched && passwordControl?.invalid }"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="toggle-password-btn"
+            (click)="toggleShowPassword()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <div
+          *ngIf="passwordControl?.touched && passwordControl?.invalid"
+          class="invalid-feedback"
+        >
+          <span *ngIf="passwordControl?.errors?.['required']">Password is required.</span>
+          <span *ngIf="passwordControl?.errors?.['minlength']">Password must be at least 6 characters.</span>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn-submit"
+        [disabled]="isLoading || loginForm.invalid"
+      >
+        <span *ngIf="isLoading" class="spinner"></span>
+        <span>{{ isLoading ? 'Signing In...' : 'Login' }}</span>
+      </button>
+    </form>
+  </div>
+</div>
+

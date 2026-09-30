@@ -1,0 +1,308 @@
+<div class="accounting-dashboard">
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-logo">₹</div>
+        <div class="brand-info">
+          <h1 class="brand-title">Accounting Management</h1>
+          <span class="brand-subtitle">Cashbook & Entry Dashboard</span>
+        </div>
+      </div>
+
+      <div class="user-group">
+        <div class="user-meta" *ngIf="currentUser()">
+          <span class="logged-in-label">Logged in as:</span>
+          <strong class="user-name">{{ currentUser()?.name }}</strong>
+        </div>
+
+        <button
+          type="button"
+          class="btn-logout"
+          (click)="onLogout()"
+          aria-label="Logout"
+        >
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="dashboard-content">
+    <!-- SECTION 1: ADD ENTRY -->
+    <section class="dashboard-section entry-section" aria-labelledby="section-add-entry">
+      <div class="section-card">
+        <div class="card-header">
+          <div>
+            <h2 id="section-add-entry" class="card-title">Add Entry</h2>
+            <p class="card-subtitle">Record a transfer or transaction between two accounts</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <app-entry-form
+            #entryForm
+            [accounts]="accounts()"
+            [isSubmitting]="isAddingEntry()"
+            (formSubmit)="onAddEntrySubmit($event)"
+          ></app-entry-form>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: ACCOUNT BALANCES -->
+    <section class="dashboard-section balances-section" aria-labelledby="section-balances">
+      <app-account-balances
+        [balances]="accountBalances()"
+        [selectedAccountId]="selectedAccountId()"
+        [isLoading]="isLoadingBalances()"
+        (accountSelected)="onAccountCardSelected($event)"
+        (addAccount)="openCreateAccountModal()"
+        (deleteAccount)="openDeleteAccountDialog($event)"
+        (editAccount)="openEditAccountModal($event)"
+      ></app-account-balances>
+    </section>
+
+    <!-- SECTION 3: ALL ENTRIES -->
+    <section class="dashboard-section entries-section" aria-labelledby="section-entries">
+      <div class="section-card">
+        <div class="card-header">
+          <div>
+            <h2 id="section-entries" class="card-title">All Entries</h2>
+            <p class="card-subtitle">Browse, search, and manage your transaction history</p>
+          </div>
+        </div>
+
+        <div class="card-body entries-body">
+          <!-- Filters Bar -->
+          <app-entry-filters
+            [accounts]="accounts()"
+            [currentFilters]="currentFilters()"
+            (filterChange)="onFiltersChanged($event)"
+            (resetFilters)="onResetFilters()"
+          ></app-entry-filters>
+
+          <!-- Table with sorting and pagination -->
+          <app-entries-table
+            [entries]="entries()"
+            [total]="totalEntries()"
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [totalPages]="totalPages()"
+            [isLoading]="isLoadingEntries()"
+            [sortBy]="sortBy()"
+            [sortDirection]="sortDirection()"
+            [hasActiveFilters]="hasActiveFilters"
+            (edit)="openEditModal($event)"
+            (delete)="openDeleteDialog($event)"
+            (sort)="onSortChanged($event)"
+            (pageChange)="onPageChanged($event)"
+            (pageSizeChange)="onPageSizeChanged($event)"
+            (clearAllFilters)="onResetFilters()"
+          ></app-entries-table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Edit Entry Modal -->
+  <app-modal
+    [isOpen]="isEditModalOpen()"
+    title="Edit Entry"
+    size="lg"
+    (close)="closeEditModal()"
+  >
+    <div modal-body>
+      <app-entry-form
+        *ngIf="editingEntry()"
+        [accounts]="accounts()"
+        [editEntry]="editingEntry()"
+        [isEditMode]="true"
+        [isSubmitting]="isUpdatingEntry()"
+        (formSubmit)="onUpdateEntrySubmit($event)"
+        (cancel)="closeEditModal()"
+      ></app-entry-form>
+    </div>
+  </app-modal>
+
+  <!-- Delete Entry Confirmation Dialog -->
+  <app-confirm-dialog
+    [isOpen]="isDeleteDialogOpen()"
+    title="Delete Entry"
+    message="Are you sure you want to delete this entry? This action cannot be undone and will update your account balances."
+    confirmText="Delete Entry"
+    cancelText="Cancel"
+    [isDanger]="true"
+    [isLoading]="isDeletingEntry()"
+    (confirm)="onConfirmDelete()"
+    (cancel)="closeDeleteDialog()"
+  ></app-confirm-dialog>
+
+  <!-- Delete Account Confirmation Dialog -->
+  <app-confirm-dialog
+    [isOpen]="isDeleteAccountDialogOpen()"
+    title="Delete Account"
+    [message]="deleteAccountMessage"
+    confirmText="Delete Account"
+    cancelText="Cancel"
+    [isDanger]="true"
+    [isLoading]="isDeletingAccount()"
+    (confirm)="onConfirmDeleteAccount()"
+    (cancel)="closeDeleteAccountDialog()"
+  ></app-confirm-dialog>
+
+  <!-- Create Account Modal -->
+  <app-modal
+    [isOpen]="isCreateAccountModalOpen()"
+    title="Create New Account"
+    size="sm"
+    (close)="closeCreateAccountModal()"
+  >
+    <form [formGroup]="createAccountForm" (ngSubmit)="onCreateAccountSubmit()" modal-body>
+      <div class="form-group">
+        <label for="newAccountName" class="form-label">
+          Account Name <span class="required">*</span>
+        </label>
+        <input
+          id="newAccountName"
+          type="text"
+          formControlName="name"
+          class="form-control"
+          placeholder="e.g. Petty Cash, Tax, Customer C"
+          [ngClass]="{
+            'is-invalid':
+              createAccountForm.get('name')?.touched &&
+              createAccountForm.get('name')?.invalid
+          }"
+        />
+        <div
+          *ngIf="
+            createAccountForm.get('name')?.touched &&
+            createAccountForm.get('name')?.invalid
+          "
+          class="invalid-feedback"
+        >
+          <span *ngIf="createAccountForm.get('name')?.errors?.['required']">
+            Account name is required.
+          </span>
+          <span *ngIf="createAccountForm.get('name')?.errors?.['minlength']">
+            Must be at least 2 characters.
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="startingBalance" class="form-label">
+          Starting Balance
+        </label>
+        <input
+          id="startingBalance"
+          type="number"
+          formControlName="startingBalance"
+          class="form-control"
+          placeholder="0.00"
+          min="0"
+          step="0.01"
+          [ngClass]="{
+            'is-invalid':
+              createAccountForm.get('startingBalance')?.touched &&
+              createAccountForm.get('startingBalance')?.invalid
+          }"
+        />
+        <div
+          *ngIf="
+            createAccountForm.get('startingBalance')?.touched &&
+            createAccountForm.get('startingBalance')?.invalid
+          "
+          class="invalid-feedback"
+        >
+          <span *ngIf="createAccountForm.get('startingBalance')?.errors?.['min']">
+            Starting balance cannot be negative.
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeCreateAccountModal()"
+          [disabled]="isCreatingAccount()"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isCreatingAccount() || createAccountForm.invalid"
+        >
+          <span *ngIf="isCreatingAccount()" class="spinner"></span>
+          <span>{{ isCreatingAccount() ? 'Creating...' : 'Create Account' }}</span>
+        </button>
+      </div>
+    </form>
+  </app-modal>
+
+  <!-- Edit Account Modal -->
+  <app-modal
+    [isOpen]="isEditAccountModalOpen()"
+    title="Edit Account"
+    size="sm"
+    (close)="closeEditAccountModal()"
+  >
+    <form [formGroup]="editAccountForm" (ngSubmit)="onEditAccountSubmit()" modal-body>
+      <div class="form-group">
+        <label for="editAccountName" class="form-label">
+          Account Name <span class="required">*</span>
+        </label>
+        <input
+          id="editAccountName"
+          type="text"
+          formControlName="name"
+          class="form-control"
+          placeholder="Account name"
+          [ngClass]="{
+            'is-invalid':
+              editAccountForm.get('name')?.touched &&
+              editAccountForm.get('name')?.invalid
+          }"
+        />
+        <div
+          *ngIf="
+            editAccountForm.get('name')?.touched &&
+            editAccountForm.get('name')?.invalid
+          "
+          class="invalid-feedback"
+        >
+          <span *ngIf="editAccountForm.get('name')?.errors?.['required']">
+            Account name is required.
+          </span>
+          <span *ngIf="editAccountForm.get('name')?.errors?.['minlength']">
+            Must be at least 2 characters.
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="closeEditAccountModal()"
+          [disabled]="isEditingAccount()"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="isEditingAccount() || editAccountForm.invalid"
+        >
+          <span *ngIf="isEditingAccount()" class="spinner"></span>
+          <span>{{ isEditingAccount() ? 'Updating...' : 'Update Account' }}</span>
+        </button>
+      </div>
+    </form>
+  </app-modal>
+</div>
+
